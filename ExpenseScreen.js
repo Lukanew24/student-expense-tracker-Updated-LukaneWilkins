@@ -14,6 +14,16 @@ import {
 } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 
+// Color palette
+const COLORS = {
+  darkBrown: '#3E2723',
+  sandBrown: '#D7CCC8',
+  accentBrown: '#8D6E63',
+  lightSand: '#EFEBE9',
+  darkText: '#1B0000',
+  pieChartColors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'],
+};
+
 export default function ExpenseScreen() {
   const db = useSQLiteContext();
 
@@ -75,12 +85,12 @@ export default function ExpenseScreen() {
   );
 
   // --------------------------
-  // NEW: CATEGORY TOTALS FOR PIE CHART
+  // CATEGORY TOTALS FOR PIE CHART
   // --------------------------
   const getCategoryTotals = () => {
     const totals = {};
 
-    expenses.forEach(exp => {
+    expenses.forEach((exp, index) => {
       const category = exp.category || "Other";
       const amount = exp.amount || 0;
 
@@ -88,11 +98,11 @@ export default function ExpenseScreen() {
       totals[category] += amount;
     });
 
-    return Object.entries(totals).map(([category, total]) => ({
+    return Object.entries(totals).map(([category, total], index) => ({
       name: category,
       amount: total,
-      color: '#' + Math.floor(Math.random() * 16777215).toString(16),
-      legendFontColor: '#fff',
+      color: COLORS.pieChartColors[index % COLORS.pieChartColors.length],
+      legendFontColor: COLORS.darkText,
       legendFontSize: 14,
     }));
   };
@@ -118,9 +128,7 @@ export default function ExpenseScreen() {
     <SafeAreaView style={styles.container}>
       <Text style={styles.heading}>Student Expense Tracker</Text>
 
-      {/* --------------------------
-           NEW PIE CHART SECTION
-      --------------------------- */}
+      {/* PIE CHART SECTION */}
       {expenses.length > 0 ? (
         <View style={{ marginBottom: 24 }}>
           <Text style={styles.chartTitle}>Spending by Category</Text>
@@ -130,11 +138,11 @@ export default function ExpenseScreen() {
             width={Dimensions.get('window').width - 20}
             height={220}
             chartConfig={{
-              backgroundColor: '#111827',
-              backgroundGradientFrom: '#1f2937',
-              backgroundGradientTo: '#1f2937',
+              backgroundColor: COLORS.sandBrown,
+              backgroundGradientFrom: COLORS.sandBrown,
+              backgroundGradientTo: COLORS.sandBrown,
               decimalPlaces: 2,
-              color: () => '#fff',
+              color: () => COLORS.darkBrown,
             }}
             accessor="amount"
             backgroundColor="transparent"
@@ -148,7 +156,7 @@ export default function ExpenseScreen() {
         <TextInput
           style={styles.input}
           placeholder="Amount (e.g. 12.50)"
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={COLORS.accentBrown}
           keyboardType="numeric"
           value={amount}
           onChangeText={setAmount}
@@ -156,18 +164,18 @@ export default function ExpenseScreen() {
         <TextInput
           style={styles.input}
           placeholder="Category (Food, Books, Rent...)"
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={COLORS.accentBrown}
           value={category}
           onChangeText={setCategory}
         />
         <TextInput
           style={styles.input}
           placeholder="Note (optional)"
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={COLORS.accentBrown}
           value={note}
           onChangeText={setNote}
         />
-        <Button title="Add Expense" onPress={addExpense} />
+        <Button title="Add Expense" onPress={addExpense} color={COLORS.accentBrown} />
       </View>
 
       <FlatList
@@ -180,23 +188,23 @@ export default function ExpenseScreen() {
       />
 
       <Text style={styles.footer}>
-        Enter your expenses and they’ll be saved locally with SQLite.
+        Enter your expenses and they'll be saved locally with SQLite.
       </Text>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#111827' },
+  container: { flex: 1, padding: 16, backgroundColor: COLORS.darkBrown },
   heading: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#fff',
+    color: COLORS.sandBrown,
     marginBottom: 16,
   },
   chartTitle: {
     fontSize: 18,
-    color: '#fff',
+    color: COLORS.darkText,
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -206,16 +214,16 @@ const styles = StyleSheet.create({
   },
   input: {
     padding: 10,
-    backgroundColor: '#1f2937',
-    color: '#fff',
+    backgroundColor: COLORS.lightSand,
+    color: COLORS.darkBrown,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#374151',
+    borderColor: COLORS.accentBrown,
   },
   expenseRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1f2937',
+    backgroundColor: COLORS.accentBrown,
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
@@ -223,29 +231,29 @@ const styles = StyleSheet.create({
   expenseAmount: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#fbbf24',
+    color: COLORS.sandBrown,
   },
   expenseCategory: {
     fontSize: 14,
-    color: '#e5e7eb',
+    color: COLORS.lightSand,
   },
   expenseNote: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: COLORS.sandBrown,
   },
   delete: {
-    color: '#f87171',
+    color: '#FF6B6B',
     fontSize: 20,
     marginLeft: 12,
   },
   empty: {
-    color: '#9ca3af',
+    color: COLORS.sandBrown,
     marginTop: 24,
     textAlign: 'center',
   },
   footer: {
     textAlign: 'center',
-    color: '#6b7280',
+    color: COLORS.accentBrown,
     marginTop: 12,
     fontSize: 12,
   },
