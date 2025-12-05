@@ -1,3 +1,6 @@
+import { PieChart } from 'react-native-chart-kit';
+import { Dimensions } from 'react-native';
+
 import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
@@ -25,11 +28,11 @@ export default function ExpenseScreen() {
     );
     setExpenses(rows);
   };
+
   const addExpense = async () => {
     const amountNumber = parseFloat(amount);
 
     if (isNaN(amountNumber) || amountNumber <= 0) {
-      // Basic validation: ignore invalid or non-positive amounts
       return;
     }
 
@@ -37,7 +40,6 @@ export default function ExpenseScreen() {
     const trimmedNote = note.trim();
 
     if (!trimmedCategory) {
-      // Category is required
       return;
     }
 
@@ -53,12 +55,10 @@ export default function ExpenseScreen() {
     loadExpenses();
   };
 
-
   const deleteExpense = async (id) => {
     await db.runAsync('DELETE FROM expenses WHERE id = ?;', [id]);
     loadExpenses();
   };
-
 
   const renderExpense = ({ item }) => (
     <View style={styles.expenseRow}>
@@ -73,6 +73,29 @@ export default function ExpenseScreen() {
       </TouchableOpacity>
     </View>
   );
+
+  // --------------------------
+  // NEW: CATEGORY TOTALS FOR PIE CHART
+  // --------------------------
+  const getCategoryTotals = () => {
+    const totals = {};
+
+    expenses.forEach(exp => {
+      const category = exp.category || "Other";
+      const amount = exp.amount || 0;
+
+      if (!totals[category]) totals[category] = 0;
+      totals[category] += amount;
+    });
+
+    return Object.entries(totals).map(([category, total]) => ({
+      name: category,
+      amount: total,
+      color: '#' + Math.floor(Math.random() * 16777215).toString(16),
+      legendFontColor: '#fff',
+      legendFontSize: 14,
+    }));
+  };
 
   useEffect(() => {
     async function setup() {
@@ -94,6 +117,32 @@ export default function ExpenseScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.heading}>Student Expense Tracker</Text>
+
+      {/* --------------------------
+           NEW PIE CHART SECTION
+      --------------------------- */}
+      {expenses.length > 0 ? (
+        <View style={{ marginBottom: 24 }}>
+          <Text style={styles.chartTitle}>Spending by Category</Text>
+
+          <PieChart
+            data={getCategoryTotals()}
+            width={Dimensions.get('window').width - 20}
+            height={220}
+            chartConfig={{
+              backgroundColor: '#111827',
+              backgroundGradientFrom: '#1f2937',
+              backgroundGradientTo: '#1f2937',
+              decimalPlaces: 2,
+              color: () => '#fff',
+            }}
+            accessor="amount"
+            backgroundColor="transparent"
+            paddingLeft="10"
+            absolute
+          />
+        </View>
+      ) : null}
 
       <View style={styles.form}>
         <TextInput
@@ -144,6 +193,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
     marginBottom: 16,
+  },
+  chartTitle: {
+    fontSize: 18,
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 8,
   },
   form: {
     marginBottom: 16,
